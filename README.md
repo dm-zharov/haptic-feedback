@@ -24,6 +24,7 @@ let feedbackPerformer = HapticFeedbackManager.defaultPerformer
 feedbackPerformer.perform(.selection)
 feedbackPerformer.perform(.levelChange)
 feedbackPerformer.perform(.impact(weight: .heavy, intensity: 0.5))
+...
 ```
 
 ## Installation
