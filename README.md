@@ -4,6 +4,8 @@
 [![SPM supported](https://img.shields.io/badge/SPM-supported-DE5C43.svg?style=flat)](https://swift.org/package-manager)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://mit-license.org)
 
+## Features
+
 Backport of SwiftUI Sensory Feedback API (iOS 17).
 
 ```swift
@@ -14,6 +16,15 @@ Backport of SwiftUI Sensory Feedback API (iOS 17).
 .hapticFeedback(.selection, trigger: value) // Backport for iOS 14.0, macOS 11.0, watchOS 7.0
 ```
 
+Directly play Haptic Feedback on iOS, macOS, watchOS.
+
+```swift
+// Similar to `NSHapticFeedbackManager / NSHapticFeedbackPerformer` (macOS API)
+let feedbackPerformer = HapticFeedbackManager.defaultPerformer
+feedbackPerformer.perform(.selection)
+feedbackPerformer.perform(.levelChange)
+feedbackPerformer.perform(.impact(weight: .heavy, intensity: 0.5))
+```
 
 ## Installation
 
@@ -28,7 +39,7 @@ The implementation is encapsulated in a single file, so you can simply drag the 
 
 To use the `HapticFeedback`, add the following dependency in your `Package.swift`:
 ```swift
-.package(url: "https://github.com/dm-zharov/haptic-feedback-backport.git", from: "1.0.0")
+.package(url: "https://github.com/dm-zharov/swift-haptic-feedback.git", from: "1.0.0")
 ```
 
 Finally, add `import HapticFeedback` to your source code.
@@ -72,15 +83,11 @@ For control over what feedback plays use the feedback closure version of the vie
 }
 ```
 
-#### Trigger From UIKit, AppKit, WatchKit
+## Communication
 
-Similar to `NSHapticFeedbackPerformer` (`Haptic Feedback API` on macOS).
-
-```swift
-let feedbackPerformer = HapticFeedbackManager.defaultPerformer
-feedbackPerformer.perform(.selection)
-feedbackPerformer.perform(.impact(weight: .heavy, intensity: 0.5))
-```
+- If you **found a bug**, open an issue.
+- If you **have a feature request**, open an issue.
+- If you **want to contribute**, submit a pull request.
 
 ## Knowledge
 
