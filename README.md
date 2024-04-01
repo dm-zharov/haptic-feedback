@@ -4,7 +4,7 @@
 [![SPM supported](https://img.shields.io/badge/SPM-supported-DE5C43.svg?style=flat)](https://swift.org/package-manager)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://mit-license.org)
 
-Backward compatibilty for SwiftUI Sensory Feedback API (iOS 17).
+Backport of SwiftUI Sensory Feedback API (iOS 17).
 
 ## Installation
 
@@ -24,9 +24,7 @@ To use the `HapticFeedback`, add the following dependency in your `Package.swift
 
 Finally, add `import HapticFeedback` to your source code.
 
-##  Quick Start
-
-####  Basic
+## Usage
 
 ```swift
 struct MyView: View {
@@ -46,13 +44,17 @@ struct MyView: View {
 }
 ```
 
-####  Basic (UIKit / AppKit / WatchKit)
+#### UIKit / AppKit / WatchKit
 
 ```swift
-HapticFeedbackManager.defaultPerformer.perform(.selection)
+let feedbackPerformer = HapticFeedbackManager.defaultPerformer
+feedbackPerformer.perform(.selection)
+feedbackPerformer.perform(.impact(weight: .heavy, intensity: 0.5))
 ```
 
 ## Knowledge
 
 * [SwiftUI Sensory Feedback](https://useyourloaf.com/blog/swiftui-sensory-feedback/)
 * [NSHapticFeedbackPerformer](https://developer.apple.com/documentation/appkit/nshapticfeedbackperformer)
+* [UIFeedbackGenerator](https://developer.apple.com/documentation/uikit/uifeedbackgenerator)
+* [WKInterfaceDevice.play(_:)](https://developer.apple.com/documentation/watchkit/wkinterfacedevice/1628128-play)
