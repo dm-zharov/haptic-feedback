@@ -6,6 +6,12 @@
 
 Backport of SwiftUI Sensory Feedback API (iOS 17).
 
+```swift
+.sensoryFeedback(.selection, trigger: value) // Native API. Only works on iOS 17.0, macOS 14.0, watchOS 10.0
+.hapticFeedback(.selection, trigger: value) // Backport for iOS 14.0, macOS 11.0, watchOS 7.0
+```
+
+
 ## Installation
 
 The implementation is encapsulated in a single file, so you can simply drag the `HapticFeedback.swift` file into your project to use it.
@@ -26,25 +32,46 @@ Finally, add `import HapticFeedback` to your source code.
 
 ## Usage
 
+#### Trigger On Value Changes
+
+The haptic feedback plays when the trigger values changes.
+
 ```swift
 struct MyView: View {
     @State private var showAccessory = false
 
     var body: some View {
-        Button("Backword compatible ") {
+        Button("Backport") {
             showAccessory.toggle()
         }
-        .hapticFeedback(.selection, trigger: showAccessory) // Compatible with iOS 14.0, macOS 11.0, watchOS 7.0
-        
-        Button("System Sensory Feedback API") {
-            showAccessory.toggle()
-        }
-        .sensoryFeedback(.selection, trigger: showAccessory) // Only works on iOS 17.0, macOS 14.0, watchOS 10.0
+        .hapticFeedback(.selection, trigger: showAccessory)
     }
 }
 ```
 
-#### UIKit / AppKit / WatchKit
+#### Trigger With Condition Closure
+
+For more control over when you trigger the feedback use the condition closure version of the view modifier.
+
+```swift
+.hapticFeedback(.selection, trigger: showAccessory) { oldValue, newValue in
+    return newValue == true
+}
+```
+
+#### Trigger With Feedback Closure
+
+For control over what feedback plays use the feedback closure version of the view modifier.
+
+```swift
+.sensoryFeedback(trigger: isFinished) { oldValue, newValue in
+    return newValue ? .success : .error
+}
+```
+
+### Trigger From UIKit, AppKit, WatchKit
+
+Similar to NSHapticFeedbackPerformer (Haptic Feedback API on macOS).
 
 ```swift
 let feedbackPerformer = HapticFeedbackManager.defaultPerformer
