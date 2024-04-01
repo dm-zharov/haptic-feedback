@@ -28,7 +28,7 @@ The implementation is encapsulated in a single file, so you can simply drag the 
 
 To use the `HapticFeedback`, add the following dependency in your `Package.swift`:
 ```swift
-.package(url: "https://github.com/dm-zharov/swift-haptic-feedback.git", from: "1.0.0")
+.package(url: "https://github.com/dm-zharov/haptic-feedback-backport.git", from: "1.0.0")
 ```
 
 Finally, add `import HapticFeedback` to your source code.
@@ -72,9 +72,9 @@ For control over what feedback plays use the feedback closure version of the vie
 }
 ```
 
-### Trigger From UIKit, AppKit, WatchKit
+#### Trigger From UIKit, AppKit, WatchKit
 
-Similar to NSHapticFeedbackPerformer (Haptic Feedback API on macOS).
+Similar to `NSHapticFeedbackPerformer` (`Haptic Feedback API` on macOS).
 
 ```swift
 let feedbackPerformer = HapticFeedbackManager.defaultPerformer
