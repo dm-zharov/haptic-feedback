@@ -1,4 +1,3 @@
-import Foundation
 #if canImport(AppKit)
 import AppKit
 #endif
@@ -11,11 +10,14 @@ import WatchKit
 #if canImport(SwiftUI)
 import SwiftUI
 #endif
+#if canImport(CoreHaptics)
+import CoreHaptics
+#endif
 
 /// Represents a type of haptic and/or audio feedback that can be played.
 @available(visionOS, unavailable)
 public struct HapticFeedback: Equatable, Sendable {
-    enum FeedbackType: Hashable, Sendable {
+    fileprivate enum FeedbackType: Hashable, Sendable {
         case start
         case stop
         case alignment
@@ -30,9 +32,9 @@ public struct HapticFeedback: Equatable, Sendable {
         case impactFlexibility(_ flexibility: HapticFeedback.Flexibility, intensity: Double)
     }
     
-    let type: FeedbackType
+    fileprivate let type: FeedbackType
     
-    init(type: FeedbackType) {
+    private init(type: FeedbackType) {
         self.type = type
     }
     
@@ -184,13 +186,35 @@ extension HapticFeedback {
     }
 }
 
+@available(visionOS, unavailable)
+extension HapticFeedback {
+    /// A Boolean value that indicates whether the device supports haptic feedback.
+    public static var isAvailable: Bool {
+        #if !os(watchOS)
+        CHHapticEngine.capabilitiesForHardware().supportsHaptics
+        #else
+        true
+        #endif
+    }
+    
+    /// Gives haptic feedback to the user.
+    ///
+    /// Haptic feedback is played only:
+    /// - On a device with a supported Taptic Engine.
+    /// - When the app is running in the foreground.
+    /// - When the System Haptics setting is enabled.
+    @MainActor
+    public func play() {
+        HapticFeedbackManager.defaultPerformer.perform(type)
+    }
+}
+
 #if canImport(SwiftUI)
 @available(visionOS, unavailable)
 private struct FeedbackGenerator<T>: ViewModifier where T: Equatable {
     private let trigger: T
     private let feedback: HapticFeedback
     private let condition: ((T, T) -> Bool)?
-    private let performer = HapticFeedbackManager.defaultPerformer
     
     func body(content: Content) -> some View {
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
@@ -206,7 +230,7 @@ private struct FeedbackGenerator<T>: ViewModifier where T: Equatable {
                 if let condition, !condition(oldValue, newValue) {
                     return
                 } else {
-                    performer.perform(feedback)
+                    feedback.play()
                 }
             }
         }
@@ -223,7 +247,6 @@ private struct FeedbackGenerator<T>: ViewModifier where T: Equatable {
 private struct CustomFeedbackGenerator<T>: ViewModifier where T: Equatable {
     private let trigger: T
     private let feedback: (T, T) -> HapticFeedback?
-    private let performer = HapticFeedbackManager.defaultPerformer
     
     func body(content: Content) -> some View {
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
@@ -237,7 +260,7 @@ private struct CustomFeedbackGenerator<T>: ViewModifier where T: Equatable {
         } else {
             content.onChange(of: trigger) { [oldValue = trigger] newValue in
                 if let feedback = feedback(oldValue, newValue) {
-                    performer.perform(feedback)
+                    feedback.play()
                 }
             }
         }
@@ -358,19 +381,19 @@ extension View {
 
 @available(visionOS, unavailable)
 /// A set of methods and constants that a haptic feedback performer implements.
-public protocol HapticFeedbackPerformer {
+private protocol HapticFeedbackPerformer {
     /// Initiates a specific pattern of haptic feedback to the user.
     /// - Parameter feedback: A pattern of feedback to be provided to the user. For possible values, see `HapticFeedback`.
-    func perform(_ feedback: HapticFeedback)
+    func perform(_ feedbackType: HapticFeedback.FeedbackType)
 }
 
-@available(visionOS, unavailable)
 /// An object that provides access to the haptic feedback management attributes.
-public class HapticFeedbackManager {
+@available(visionOS, unavailable)
+private class HapticFeedbackManager {
     /// Requests a haptic feedback performer object that is based on the current device, accessibility settings, and user preferences.
-    public static var defaultPerformer: any HapticFeedbackPerformer {
+    static var defaultPerformer: any HapticFeedbackPerformer {
         #if os(iOS) || targetEnvironment(macCatalyst)
-        return _UIHapticFeedbackPerformer()
+        return _UIHapticFeedbackPerformer.shared
         #elseif os(macOS)
         return _NSHapticFeedbackPerformer.shared
         #elseif os(watchOS)
@@ -385,8 +408,7 @@ public class HapticFeedbackManager {
 private final class _UIHapticFeedbackPerformer: HapticFeedbackPerformer {
     private let _cache: [HapticFeedback.FeedbackType: UIFeedbackGenerator] = [:]
     
-    func perform(_ feedback: HapticFeedback) {
-        let feedbackType = feedback.type
+    func perform(_ feedbackType: HapticFeedback.FeedbackType) {
         switch feedbackType {
         case .success:
             let feedbackGenerator = _cache[feedbackType, default: UINotificationFeedbackGenerator()] as? UINotificationFeedbackGenerator
@@ -412,10 +434,13 @@ private final class _UIHapticFeedbackPerformer: HapticFeedbackPerformer {
         
         _cache[feedbackType]?.prepare()
     }
+    
+    static let shared = _UIHapticFeedbackPerformer()
+    private init() {}
 }
 
 extension UIImpactFeedbackGenerator.FeedbackStyle {
-    init(_ weight: HapticFeedback.Weight) {
+    fileprivate init(_ weight: HapticFeedback.Weight) {
         switch weight {
         case .heavy:
             self = .heavy
@@ -426,7 +451,7 @@ extension UIImpactFeedbackGenerator.FeedbackStyle {
         }
     }
     
-    init(_ flexibility: HapticFeedback.Flexibility) {
+    fileprivate init(_ flexibility: HapticFeedback.Flexibility) {
         switch flexibility {
         case .rigid:
             self = .rigid
@@ -441,8 +466,8 @@ extension UIImpactFeedbackGenerator.FeedbackStyle {
 
 #if os(macOS)
 private final class _NSHapticFeedbackPerformer: HapticFeedbackPerformer {
-    func perform(_ feedback: HapticFeedback) {
-        if let pattern = NSHapticFeedbackManager.FeedbackPattern(feedback.type) {
+    func perform(_ feedbackType: HapticFeedback.FeedbackType) {
+        if let pattern = NSHapticFeedbackManager.FeedbackPattern(feedbackType) {
             NSHapticFeedbackManager.defaultPerformer.perform(pattern, performanceTime: .default)
         }
     }
@@ -451,8 +476,8 @@ private final class _NSHapticFeedbackPerformer: HapticFeedbackPerformer {
     private init() {}
 }
 
-extension NSHapticFeedbackManager.FeedbackPattern {
-    init?(_ feedbackType: HapticFeedback.FeedbackType) {
+private extension NSHapticFeedbackManager.FeedbackPattern {
+    fileprivate init?(_ feedbackType: HapticFeedback.FeedbackType) {
         switch feedbackType {
         case .alignment:
             self = .alignment
@@ -467,8 +492,8 @@ extension NSHapticFeedbackManager.FeedbackPattern {
 
 #if os(watchOS)
 private final class _WKHapticFeedbackPerformer: HapticFeedbackPerformer {
-    func perform(_ feedback: HapticFeedback) {
-        if let hapticType = WKHapticType(feedback.type) {
+    func perform(_ feedbackType: HapticFeedback.FeedbackType) {
+        if let hapticType = WKHapticType(feedbackType) {
             WKInterfaceDevice.current().play(hapticType)
         }
     }
@@ -477,7 +502,7 @@ private final class _WKHapticFeedbackPerformer: HapticFeedbackPerformer {
     private init() {}
 }
 
-extension WKHapticType {
+private extension WKHapticType {
     init?(_ feedbackType: HapticFeedback.FeedbackType) {
         switch feedbackType {
         case .start:
@@ -505,7 +530,7 @@ extension WKHapticType {
 
 @available(visionOS, unavailable)
 private final class _GenericFeedbackPerformer: HapticFeedbackPerformer {
-    func perform(_ feedback: HapticFeedback) { }
+    func perform(_ feedbackType: HapticFeedback.FeedbackType) { }
 }
 
 #if canImport(SwiftUI)
@@ -545,7 +570,7 @@ extension SensoryFeedback {
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 @available(visionOS, unavailable)
 extension SensoryFeedback.Weight {
-    init(_ weight: HapticFeedback.Weight) {
+    fileprivate init(_ weight: HapticFeedback.Weight) {
         switch weight {
         case .heavy:
             self = .heavy
