@@ -9,17 +9,17 @@
 Backport of SwiftUI Sensory Feedback API (iOS 17).
 
 ```swift
-// Native API. Only works on iOS 17.0, macOS 14.0, watchOS 10.0
+// Native API. Only works on iOS 17, macOS 14, watchOS 10
 .sensoryFeedback(.selection, trigger: value)
 
-// Backport. Compatible with iOS 14.0, macOS 11.0, watchOS 7.0
-.hapticFeedback(.selection, trigger: value) // Backport for iOS 14.0, macOS 11.0, watchOS 7.0
+// Backport. Compatible with iOS 14, macOS 11, watchOS 7
+.hapticFeedback(.selection, trigger: value)
 ```
 
 Directly play Haptic Feedback on iOS, macOS, watchOS.
 
 ```swift
-// Similar to `NSHapticFeedbackManager / NSHapticFeedbackPerformer` (macOS API)
+// Style is similar to `NSHapticFeedbackManager & NSHapticFeedbackPerformer` (macOS API)
 let feedbackPerformer = HapticFeedbackManager.defaultPerformer
 feedbackPerformer.perform(.selection)
 feedbackPerformer.perform(.levelChange)
@@ -40,7 +40,7 @@ The implementation is encapsulated in a single file, so you can simply drag the 
 
 To use the `HapticFeedback`, add the following dependency in your `Package.swift`:
 ```swift
-.package(url: "https://github.com/dm-zharov/swift-haptic-feedback.git", from: "1.0.0")
+.package(url: "https://github.com/dm-zharov/haptic-feedback.git", from: "1.0.0")
 ```
 
 Finally, add `import HapticFeedback` to your source code.
@@ -103,4 +103,4 @@ Dmitriy Zharov, contact@zharov.dev
 
 ## License
 
-HapticFeedback is available under the MIT license. See the [LICENSE file](https://github.com/dm-zharov/swift-haptic-feedback/blob/master/LICENSE) for more info.
+HapticFeedback is available under the MIT license. See the [LICENSE file](https://github.com/dm-zharov/haptic-feedback/blob/master/LICENSE) for more info.
