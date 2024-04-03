@@ -79,7 +79,7 @@ For more control over when you trigger the feedback use the condition closure ve
 For control over what feedback plays use the feedback closure version of the view modifier.
 
 ```swift
-.sensoryFeedback(trigger: isFinished) { oldValue, newValue in
+.hapticFeedback(trigger: isFinished) { oldValue, newValue in
     return newValue ? .success : .error
 }
 ```
