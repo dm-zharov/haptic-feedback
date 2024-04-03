@@ -16,15 +16,17 @@ Backport of SwiftUI Sensory Feedback API (iOS 17).
 .hapticFeedback(.selection, trigger: value)
 ```
 
-Directly play Haptic Feedback on iOS, macOS, watchOS.
+Directly play Haptic Feedback.
 
 ```swift
-// Style is similar to `NSHapticFeedbackManager & NSHapticFeedbackPerformer` (macOS API)
-let feedbackPerformer = HapticFeedbackManager.defaultPerformer
-feedbackPerformer.perform(.selection)
-feedbackPerformer.perform(.levelChange)
-feedbackPerformer.perform(.impact(weight: .heavy, intensity: 0.5))
-...
+// Determines if device supports haptic feedback
+HapticFeedback.isAvailable
+
+// Plays selection feedback
+HapticFeedback.selection.play()
+
+// Plays impact feedback
+HapticFeedback.impact(weight: .heavy, intensity: 0.5).play()
 ```
 
 ## Installation
