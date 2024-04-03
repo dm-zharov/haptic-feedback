@@ -96,3 +96,11 @@ For control over what feedback plays use the feedback closure version of the vie
 * [NSHapticFeedbackPerformer](https://developer.apple.com/documentation/appkit/nshapticfeedbackperformer)
 * [UIFeedbackGenerator](https://developer.apple.com/documentation/uikit/uifeedbackgenerator)
 * [WKInterfaceDevice.play(_:)](https://developer.apple.com/documentation/watchkit/wkinterfacedevice/1628128-play)
+
+## Author
+
+Dmitriy Zharov, contact@zharov.dev
+
+## License
+
+HapticFeedback is available under the MIT license. See the [LICENSE file](https://github.com/dm-zharov/swift-haptic-feedback/blob/master/LICENSE) for more info.
