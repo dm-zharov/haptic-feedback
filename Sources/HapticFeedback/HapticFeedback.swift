@@ -409,7 +409,8 @@ private class HapticFeedbackManager {
 #if os(iOS) || targetEnvironment(macCatalyst)
 private final class _UIHapticFeedbackPerformer: HapticFeedbackPerformer {
     private let _cache: [HapticFeedback.FeedbackType: UIFeedbackGenerator] = [:]
-    
+
+    @MainActor
     func perform(_ feedbackType: HapticFeedback.FeedbackType) {
         switch feedbackType {
         case .success:
