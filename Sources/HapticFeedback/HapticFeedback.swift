@@ -203,7 +203,9 @@ extension HapticFeedback {
     /// - On a device with a supported Taptic Engine.
     /// - When the app is running in the foreground.
     /// - When the System Haptics setting is enabled.
+    #if os(iOS) || targetEnvironment(macCatalyst)
     @MainActor
+    #endif
     public func play() {
         HapticFeedbackManager.defaultPerformer.perform(type)
     }
