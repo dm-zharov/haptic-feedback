@@ -383,7 +383,7 @@ extension View {
 
 @available(visionOS, unavailable)
 /// A set of methods and constants that a haptic feedback performer implements.
-private protocol HapticFeedbackPerformer {
+private protocol HapticFeedbackPerformer: Sendable {
     /// Initiates a specific pattern of haptic feedback to the user.
     /// - Parameter feedback: A pattern of feedback to be provided to the user. For possible values, see `HapticFeedback`.
     func perform(_ feedbackType: HapticFeedback.FeedbackType)
@@ -410,32 +410,32 @@ private class HapticFeedbackManager {
 private final class _UIHapticFeedbackPerformer: HapticFeedbackPerformer {
     private let _cache: [HapticFeedback.FeedbackType: UIFeedbackGenerator] = [:]
 
-    @MainActor
     func perform(_ feedbackType: HapticFeedback.FeedbackType) {
-        switch feedbackType {
-        case .success:
-            let feedbackGenerator = _cache[feedbackType, default: UINotificationFeedbackGenerator()] as? UINotificationFeedbackGenerator
-            feedbackGenerator?.notificationOccurred(.success)
-        case .warning:
-            let feedbackGenerator = _cache[feedbackType, default: UINotificationFeedbackGenerator()] as? UINotificationFeedbackGenerator
-            feedbackGenerator?.notificationOccurred(.warning)
-        case .error:
-            let feedbackGenerator = _cache[feedbackType, default: UINotificationFeedbackGenerator()] as? UINotificationFeedbackGenerator
-            feedbackGenerator?.notificationOccurred(.error)
-        case .selection, .increase, .decrease:
-            let feedbackGenerator = _cache[feedbackType, default: UISelectionFeedbackGenerator()] as? UISelectionFeedbackGenerator
-            feedbackGenerator?.selectionChanged()
-        case let .impactWeight(weight, intensity):
-            let feedbackGenerator = _cache[feedbackType, default: UIImpactFeedbackGenerator(style: .init(weight))] as? UIImpactFeedbackGenerator
-            feedbackGenerator?.impactOccurred(intensity: intensity)
-        case let .impactFlexibility(flexibility, intensity):
-            let feedbackGenerator = _cache[feedbackType, default: UIImpactFeedbackGenerator(style: .init(flexibility))] as? UIImpactFeedbackGenerator
-            feedbackGenerator?.impactOccurred(intensity: intensity)
-        default:
-            return
+        Task { @MainActor in
+            switch feedbackType {
+            case .success:
+                let feedbackGenerator = _cache[feedbackType, default: UINotificationFeedbackGenerator()] as? UINotificationFeedbackGenerator
+                feedbackGenerator?.notificationOccurred(.success)
+            case .warning:
+                let feedbackGenerator = _cache[feedbackType, default: UINotificationFeedbackGenerator()] as? UINotificationFeedbackGenerator
+                feedbackGenerator?.notificationOccurred(.warning)
+            case .error:
+                let feedbackGenerator = _cache[feedbackType, default: UINotificationFeedbackGenerator()] as? UINotificationFeedbackGenerator
+                feedbackGenerator?.notificationOccurred(.error)
+            case .selection, .increase, .decrease:
+                let feedbackGenerator = _cache[feedbackType, default: UISelectionFeedbackGenerator()] as? UISelectionFeedbackGenerator
+                feedbackGenerator?.selectionChanged()
+            case let .impactWeight(weight, intensity):
+                let feedbackGenerator = _cache[feedbackType, default: UIImpactFeedbackGenerator(style: .init(weight))] as? UIImpactFeedbackGenerator
+                feedbackGenerator?.impactOccurred(intensity: intensity)
+            case let .impactFlexibility(flexibility, intensity):
+                let feedbackGenerator = _cache[feedbackType, default: UIImpactFeedbackGenerator(style: .init(flexibility))] as? UIImpactFeedbackGenerator
+                feedbackGenerator?.impactOccurred(intensity: intensity)
+            default:
+                return
+            }
+            _cache[feedbackType]?.prepare()
         }
-        
-        _cache[feedbackType]?.prepare()
     }
     
     static let shared = _UIHapticFeedbackPerformer()
@@ -480,7 +480,7 @@ private final class _NSHapticFeedbackPerformer: HapticFeedbackPerformer {
 }
 
 private extension NSHapticFeedbackManager.FeedbackPattern {
-    fileprivate init?(_ feedbackType: HapticFeedback.FeedbackType) {
+    init?(_ feedbackType: HapticFeedback.FeedbackType) {
         switch feedbackType {
         case .alignment:
             self = .alignment
